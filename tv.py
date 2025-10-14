@@ -365,6 +365,8 @@ def clean_m3u_header(lines):
     return lines
 
 def replace_tv_urls(lines, tv_urls):
+    import re  # Make sure this is at the top of your script
+
     updated = []
     tv_idx = 0
     i = 0
@@ -374,16 +376,17 @@ def replace_tv_urls(lines, tv_urls):
             group, title = tv_urls[tv_idx][1], tv_urls[tv_idx][2]
             group_title = group_overrides.get(title, "Others")
 
-			if i > 0 and lines[i - 1].startswith("#EXTINF"):
-    			extinf = lines[i - 1]
-   		 		if "," in extinf:
-        			parts = extinf.split(",")
-        			parts[-1] = title
-        			extinf = ",".join(parts)
-        		if 'group-title=' not in extinf:
-            		extinf = re.sub(r'(tvg-logo="[^"]+")', r'\1 group-title="{}"'.format(group_title), extinf)
-    		updated[-1] = extinf
-	
+            if i > 0 and lines[i - 1].startswith("#EXTINF"):
+                extinf = lines[i - 1]
+                if "," in extinf:
+                    parts = extinf.split(",")
+                    parts[-1] = title
+                    extinf = ",".join(parts)
+                    # Inject group-title if not already present
+                    if 'group-title=' not in extinf:
+                        extinf = re.sub(r'(tvg-logo="[^"]+")', r'\1 group-title="{}"'.format(group_title), extinf)
+                updated[-1] = extinf
+
             updated.append(tv_urls[tv_idx][0])
             tv_idx += 1
         else:
