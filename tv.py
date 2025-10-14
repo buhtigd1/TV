@@ -295,7 +295,7 @@ async def scrape_tv_urls():
                 try:
                     await new_page.goto(full_url, timeout=60000)
                     await new_page.wait_for_timeout(3000)  # Let page settle
-                    button = await new_page.get_by_text(f"Load {quality} Stream", exact=True)
+                    button = new_page.get_by_text(f"Load {quality} Stream", exact=True)
                     await button.click(timeout=0)
                     await asyncio.sleep(4)
                 except Exception as e:
