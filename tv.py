@@ -365,8 +365,8 @@ def clean_m3u_header(lines):
 def replace_tv_urls(lines, tv_urls):
     updated = []
     tv_idx = 0
-    
     i = 0
+    
     while i < len(lines):
         line = lines[i]
         
@@ -387,10 +387,8 @@ def replace_tv_urls(lines, tv_urls):
             if extinf_line:
                 # Check if group-title already exists
                 if 'group-title=' in extinf_line:
-                    # Replace the title part only
-                    parts = extinf_line.split(',', 1)
-                    if len(parts) > 1:
-                        extinf_line = f"{parts[0]},{parts[1]}"
+                    # Replace the existing group-title
+                    extinf_line = re.sub(r'group-title="[^"]*"', f'group-title="{group_title}"', extinf_line)
                 else:
                     # Add group-title to the EXTINF line
                     parts = extinf_line.split(',', 1)
