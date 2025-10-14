@@ -391,9 +391,10 @@ def replace_tv_urls(lines, tv_urls):
                     extinf_line = re.sub(r'group-title="[^"]*"', f'group-title="{group_title}"', extinf_line)
                 else:
                     # Add group-title to the EXTINF line
+                    # Find where to insert group-title (before the title part)
                     parts = extinf_line.split(',', 1)
                     if len(parts) > 1:
-                        # Insert group-title before the title
+                        # Insert group-title before the title part
                         extinf_line = f"{parts[0]},group-title=\"{group_title}\" {parts[1]}"
             
             # Add the modified EXTINF line if it exists
