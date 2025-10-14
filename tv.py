@@ -367,22 +367,6 @@ def replace_tv_urls(lines, tv_urls):
     tv_idx = 0
     i = 0
     
-    # First pass: collect all the EXTINF lines and their corresponding URLs
-    extinf_lines = []
-    url_lines = []
-    
-    while i < len(lines):
-        line = lines[i]
-        if line.strip().startswith("#EXTINF"):
-            extinf_lines.append(i)
-        elif line.strip().startswith("http"):
-            url_lines.append(i)
-        i += 1
-    
-    # Second pass: replace URLs with new ones and update EXTINF lines
-    i = 0
-    processed_extinf = set()
-    
     while i < len(lines):
         line = lines[i]
         
@@ -400,33 +384,27 @@ def replace_tv_urls(lines, tv_urls):
                 extinf_line = lines[i-1]
             
             # If we found an EXTINF line, modify it
-            if extinf_line and i-1 not in processed_extinf:
-                # Create a new EXTINF line with group-title
+            if extinf_line:
+                # Check if group-title already exists
                 if 'group-title=' in extinf_line:
-                    # Replace existing group-title
-                    new_extinf = re.sub(r'group-title="[^"]*"', f'group-title="{group_title}"', extinf_line)
+                    # Replace the existing group-title
+                    extinf_line = re.sub(r'group-title="[^"]*"', f'group-title="{group_title}"', extinf_line)
                 else:
                     # Add group-title to the EXTINF line
-                    # Insert group-title before the title part
+                    # Find where to insert group-title (before the title part)
                     parts = extinf_line.split(',', 1)
                     if len(parts) > 1:
                         # Insert group-title before the title part
-                        new_extinf = f"{parts[0]},group-title=\"{group_title}\" {parts[1]}"
-                    else:
-                        new_extinf = extinf_line
-                
-                updated.append(new_extinf)
-                updated.append(url)
-                processed_extinf.add(i-1)
-                tv_idx += 1
-            elif i-1 in processed_extinf:
-                # Skip this URL since we already processed its EXTINF line
-                updated.append(url)
-                tv_idx += 1
-            else:
-                # No EXTINF line found, just add the URL
-                updated.append(url)
-                tv_idx += 1
+                        extinf_line = f"{parts[0]},group-title=\"{group_title}\" {parts[1]}"
+            
+            # Add the modified EXTINF line if it exists
+            if extinf_line:
+                updated.append(extinf_line)
+            
+            # Add the new URL
+            updated.append(url)
+            
+            tv_idx += 1
         else:
             updated.append(line)
         i += 1
