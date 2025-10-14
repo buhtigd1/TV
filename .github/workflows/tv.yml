@@ -2,7 +2,7 @@ name: Live TV
 
 on:
   schedule:
-    - cron: '0 */2 * * *'  # Run every hour
+    - cron: '0 * * * *'  # Run every hour
   workflow_dispatch:    
 
 permissions:
