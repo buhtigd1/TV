@@ -291,14 +291,16 @@ async def scrape_tv_urls():
                         stream_url = real
 
                 new_page.on("response", handle_response)
-                await new_page.goto(full_url)
 
                 try:
+                    await new_page.goto(full_url, timeout=60000)
                     await new_page.get_by_text(f"Load {quality} Stream", exact=True).click(timeout=5000)
-                except:
-                    pass
+                    await asyncio.sleep(4)
+                except Exception as e:
+                    print(f"Failed to load {full_url} ({quality}): {e}")
+                    await new_page.close()
+                    continue
 
-                await asyncio.sleep(4)
                 await new_page.close()
 
                 if stream_url:
@@ -309,6 +311,7 @@ async def scrape_tv_urls():
 
         await browser.close()
     return urls
+
 
 async def scrape_section_urls(context, section_path, group_name):
     urls = []
