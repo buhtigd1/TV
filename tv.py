@@ -294,10 +294,12 @@ async def scrape_tv_urls():
 
                 try:
                     await new_page.goto(full_url, timeout=60000)
-                    await new_page.get_by_text(f"Load {quality} Stream", exact=True).click(timeout=5000)
+                    await new_page.wait_for_timeout(3000)  # Let page settle
+                    button = await new_page.get_by_text(f"Load {quality} Stream", exact=True)
+                    await button.click(timeout=0)
                     await asyncio.sleep(4)
                 except Exception as e:
-                    print(f"Failed to load {full_url} ({quality}): {e}")
+                    print(f"Failed to click {quality} button on {full_url}: {e}")
                     await new_page.close()
                     continue
 
@@ -311,7 +313,6 @@ async def scrape_tv_urls():
 
         await browser.close()
     return urls
-
 
 async def scrape_section_urls(context, section_path, group_name):
     urls = []
@@ -368,7 +369,7 @@ def clean_m3u_header(lines):
     return lines
 
 def replace_tv_urls(lines, tv_urls):
-    import re  # Make sure this is at the top of your script
+    import re
 
     updated = []
     tv_idx = 0
@@ -385,9 +386,13 @@ def replace_tv_urls(lines, tv_urls):
                     parts = extinf.split(",")
                     parts[-1] = title
                     extinf = ",".join(parts)
-                    # Inject group-title if not already present
-                    if 'group-title=' not in extinf:
-                        extinf = re.sub(r'(tvg-logo="[^"]+")', r'\1 group-title="{}"'.format(group_title), extinf)
+
+                # Inject or replace group-title
+                if 'group-title=' in extinf:
+                    extinf = re.sub(r'group-title="[^"]*"', f'group-title="{group_title}"', extinf)
+                else:
+                    extinf = extinf.replace('tvg-logo="', f'group-title="{group_title}" tvg-logo="')
+
                 updated[-1] = extinf
 
             updated.append(tv_urls[tv_idx][0])
