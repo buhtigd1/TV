@@ -9,7 +9,6 @@ M3U8_FILE = "tv.m3u8"
 BASE_URL = "https://thetvapp.to"
 CHANNEL_LIST_URL = f"{BASE_URL}/tv"
 
-
 # Define group-title overrides
 group_overrides = {
     "A&E SD": "Entertainment",
@@ -249,7 +248,6 @@ group_overrides = {
     "WNYW (New York) FOX East HD": "News"
 }
 
-
 def extract_real_m3u8(url: str):
     if "ping.gif" in url and "mu=" in url:
         parsed = urllib.parse.urlparse(url)
@@ -365,33 +363,53 @@ def clean_m3u_header(lines):
     return lines
 
 def replace_tv_urls(lines, tv_urls):
-    import re  # Make sure this is at the top of your script
-
     updated = []
     tv_idx = 0
+    
     i = 0
     while i < len(lines):
         line = lines[i]
+        
+        # If this is a URL line and we have more URLs to replace
         if line.strip().startswith("http") and tv_idx < len(tv_urls):
-            group, title = tv_urls[tv_idx][1], tv_urls[tv_idx][2]
+            # Get the corresponding URL info
+            url, group, title = tv_urls[tv_idx]
+            
+            # Find the group-title for this channel
             group_title = group_overrides.get(title, "Others")
-
-            if i > 0 and lines[i - 1].startswith("#EXTINF"):
-                extinf = lines[i - 1]
-                if "," in extinf:
-                    parts = extinf.split(",")
-                    parts[-1] = title
-                    extinf = ",".join(parts)
-                    # Inject group-title if not already present
-                    if 'group-title=' not in extinf:
-                        extinf = re.sub(r'(tvg-logo="[^"]+")', r'\1 group-title="{}"'.format(group_title), extinf)
-                updated[-1] = extinf
-
-            updated.append(tv_urls[tv_idx][0])
+            
+            # Look for the previous EXTINF line
+            extinf_line = None
+            if i > 0 and lines[i-1].startswith("#EXTINF"):
+                extinf_line = lines[i-1]
+            
+            # If we found an EXTINF line, modify it
+            if extinf_line:
+                # Check if group-title already exists
+                if 'group-title=' in extinf_line:
+                    # Replace the title part only
+                    parts = extinf_line.split(',', 1)
+                    if len(parts) > 1:
+                        extinf_line = f"{parts[0]},{parts[1]}"
+                else:
+                    # Add group-title to the EXTINF line
+                    parts = extinf_line.split(',', 1)
+                    if len(parts) > 1:
+                        # Insert group-title before the title
+                        extinf_line = f"{parts[0]},group-title=\"{group_title}\" {parts[1]}"
+            
+            # Add the modified EXTINF line if it exists
+            if extinf_line:
+                updated.append(extinf_line)
+            
+            # Add the new URL
+            updated.append(url)
+            
             tv_idx += 1
         else:
             updated.append(line)
         i += 1
+    
     return updated
 
 async def main():
