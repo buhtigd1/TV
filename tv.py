@@ -398,8 +398,8 @@ def replace_tv_urls(lines, tv_urls):
                         extinf_line = f"{parts[0]},group-title=\"{group_title}\" {parts[1]}"
             
             # Add the modified EXTINF line if it exists
-            if extinf_line:
-                updated.append(extinf_line)
+            if extinf_line and updated:
+                updated[-1] = extinf_line
             
             # Add the new URL
             updated.append(url)
