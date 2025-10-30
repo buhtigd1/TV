@@ -333,7 +333,10 @@ for link in links:
     live_tv_links.append((channel_name, link_url))
 
 # Print the M3U header
-print("#EXTM3U")
+from datetime import datetime, timedelta
+timestamp = (datetime.utcnow() + timedelta(hours=7)).strftime("%Y-%m-%d %H:%M:%S UTC+7")
+print(f'#EXTM3U url-tvg="" # Updated: {timestamp}')
+
 
 # Iterate over each live TV channel link
 for name, link in live_tv_links:
@@ -423,4 +426,6 @@ for name, link in live_tv_links:
 
 # Close the WebDriver
 driver.quit()
+
+
 
