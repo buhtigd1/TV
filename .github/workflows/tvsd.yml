@@ -66,10 +66,13 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git pull --rebase origin main
+          git add -A
           git add tvsd.m3u
-          git commit -m "Update $(date -u +'%a %b %d %T UTC %Y')"
+          git commit -m "Update $(date -u +'%a %b %d %T UTC %Y')" || echo "No changes to commit"
+          git pull --rebase origin main
           git push origin main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
 
