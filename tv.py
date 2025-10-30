@@ -357,11 +357,11 @@ async def scrape_section_urls(context, section_path, group_name):
                 print(f"{quality} not found")
     return urls
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 def clean_m3u_header(lines):
     lines = [line for line in lines if not line.strip().startswith("#EXTM3U")]
-    timestamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
+    timestamp = (datetime.utcnow() + timedelta(hours=7)).strftime("%Y-%m-%d %H:%M:%S UTC+7")
     lines.insert(0, f'#EXTM3U url-tvg="https://tvpass.org/epg.xml" # Updated: {timestamp}')
     return lines
 
